@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rabiat Theme v2 — Font + Color Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital@0;1&family=Rajdhani:wght@400;600;700&family=Syne:wght@400;700;800&family=Space+Grotesk:wght@300;400;500;700&family=Unbounded:wght@400;700;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cabinet+Grotesk:wght@300;400;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --void:     #0A0A0A;
+  --obsidian: #141414;
+  --shadow:   #1E1E1E;
+  --bone:     #F5F5F0;
+  --ash:      #7A7A75;
+  --red:      #C0392B;
+  --teal:     #5EEAD4;
+  --border:   rgba(245,245,240,0.07);
+}
+
+body {
+  background: var(--void);
+  color: var(--bone);
+  font-family: 'DM Mono', monospace;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.hdr {
+  padding: 40px 40px 32px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-end; justify-content: space-between;
+}
+.hdr-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(52px, 9vw, 100px);
+  line-height: 0.88;
+  letter-spacing: 3px;
+}
+.hdr-title span { color: var(--red); }
+.hdr-meta { font-size: 9px; letter-spacing: 3px; color: var(--ash); text-align:right; line-height:2.2; text-transform:uppercase; }
+
+/* ── SECTION LABELS ── */
+.sec-label {
+  font-size: 9px; letter-spacing: 4px; text-transform: uppercase;
+  color: var(--red); margin-bottom: 28px;
+}
+
+/* ── RED TUNER ── */
+.red-section { padding: 48px 40px; border-bottom: 1px solid var(--border); }
+.red-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+
+.red-chip {
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  overflow: hidden;
+  transition: transform .15s, border-color .15s;
+  flex: 1; min-width: 100px;
+}
+.red-chip:hover { transform: translateY(-2px); }
+.red-chip.sel { border-color: var(--bone); }
+.red-chip.sel::after { content:'✓'; position:absolute; top:6px;right:8px; font-size:11px; }
+.red-chip { position: relative; }
+.red-swatch { height: 80px; }
+.red-info { background: var(--obsidian); padding: 12px; }
+.red-name { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 3px; }
+.red-hex { font-size: 10px; color: var(--ash); }
+
+/* red preview bar */
+.red-preview-bar {
+  padding: 20px 24px;
+  background: var(--obsidian);
+  border-radius: 3px;
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+}
+.rp-text { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; }
+.rp-label { font-size: 9px; letter-spacing: 3px; color: var(--ash); text-transform: uppercase; }
+.rp-btn { background: var(--red); color: var(--bone); border: none; padding: 10px 20px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border-radius: 2px; }
+.rp-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--red); transition: background .3s; }
+.rp-border { border-bottom: 2px solid var(--red); padding-bottom: 4px; font-size: 12px; letter-spacing: 1px; transition: border-color .3s; }
+
+/* ── TEAL TOGGLE ── */
+.teal-section { padding: 48px 40px; border-bottom: 1px solid var(--border); }
+.teal-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.teal-chip {
+  cursor: pointer; border: 1px solid transparent; border-radius: 3px;
+  overflow: hidden; transition: transform .15s, border-color .15s;
+  flex: 1; min-width: 120px; position: relative;
+}
+.teal-chip:hover { transform: translateY(-2px); }
+.teal-chip.sel { border-color: var(--bone); }
+.teal-chip.sel::after { content:'✓'; position:absolute; top:6px;right:8px; font-size:11px; }
+.teal-swatch { height: 70px; }
+.teal-info { background: var(--obsidian); padding: 12px; }
+.teal-name { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 3px; }
+.teal-hex { font-size: 10px; color: var(--ash); }
+.teal-note { font-size: 9px; color: var(--ash); margin-top: 5px; font-style: italic; line-height: 1.4; }
+
+.teal-rule {
+  margin-top: 28px;
+  padding: 16px 20px;
+  border-left: 2px solid var(--teal);
+  background: var(--obsidian);
+  font-size: 11px;
+  color: var(--ash);
+  line-height: 1.7;
+  transition: border-color .3s;
+}
+.teal-rule strong { color: var(--bone); font-weight: 500; }
+
+/* ── FONT TESTER ── */
+.font-section { padding: 48px 40px; border-bottom: 1px solid var(--border); }
+
+.font-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 36px; }
+.ftab {
+  padding: 8px 16px; border: 1px solid var(--border); border-radius: 2px;
+  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase; cursor: pointer; color: var(--ash);
+  transition: all .15s; background: transparent;
+}
+.ftab:hover { color: var(--bone); border-color: rgba(245,245,240,0.2); }
+.ftab.active { background: var(--red); color: var(--bone); border-color: var(--red); }
+
+.font-preview-area {
+  background: var(--obsidian);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.fp-nav {
+  padding: 14px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.fp-logo { font-size: 16px; letter-spacing: 3px; }
+.fp-logo span { color: var(--red); }
+.fp-links { display: flex; gap: 20px; font-size: 11px; color: var(--ash); }
+
+.fp-hero { padding: 56px 40px 48px; position: relative; }
+.fp-hero-eyebrow { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--teal); margin-bottom: 16px; transition: color .3s; }
+.fp-hero-h1 { font-size: clamp(38px, 6vw, 72px); line-height: 1; margin-bottom: 20px; }
+.fp-hero-h1 em { color: var(--red); font-style: normal; }
+.fp-hero-body { font-size: 14px; color: var(--ash); line-height: 1.8; max-width: 420px; margin-bottom: 32px; }
+.fp-btns { display: flex; gap: 12px; }
+.fp-btn-red { background: var(--red); color: var(--bone); border: none; padding: 12px 24px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: default; border-radius: 2px; }
+.fp-btn-outline { background: transparent; color: var(--teal); border: 1px solid var(--teal); padding: 12px 24px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: default; border-radius: 2px; transition: color .3s, border-color .3s; }
+
+.fp-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; border-top: 1px solid var(--border); }
+.fp-card { padding: 24px; background: var(--shadow); }
+.fp-card-tag { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-bottom: 10px; }
+.fp-card-title { font-size: 17px; line-height: 1.2; margin-bottom: 8px; }
+.fp-card-body { font-size: 11px; color: var(--ash); line-height: 1.7; }
+
+.font-info-bar {
+  padding: 20px 40px;
+  background: var(--shadow);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 32px; flex-wrap: wrap;
+}
+.fi-label { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--ash); margin-bottom: 4px; }
+.fi-value { font-size: 13px; color: var(--bone); }
+.fi-pair { font-size: 11px; color: var(--ash); font-style: italic; }
+
+/* ── PALETTE ── */
+.palette-section { padding: 48px 40px; border-bottom: 1px solid var(--border); }
+.palette-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 2px; border-radius: 3px; overflow: hidden; margin-top: 28px; }
+.pchip { padding: 22px 14px 18px; cursor: pointer; position: relative; transition: filter .15s; }
+.pchip:hover { filter: brightness(1.1); }
+.pchip-name { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; font-weight: 500; margin-bottom: 3px; }
+.pchip-hex { font-size: 9px; opacity: .6; }
+.pchip-role { font-size: 8px; opacity: .4; margin-top: 5px; font-style: italic; }
+.pchip-tag { position: absolute; top: 6px; right: 6px; font-size: 7px; background: rgba(0,0,0,0.4); padding: 2px 5px; border-radius: 1px; opacity: 0; transition: opacity .2s; letter-spacing: 1px; }
+.pchip-tag.show { opacity: 1; }
+
+/* ── CSS EXPORT ── */
+.export-section { padding: 48px 40px; }
+.codebox {
+  background: var(--obsidian); border: 1px solid var(--border); border-radius: 3px;
+  padding: 28px 32px; font-size: 10.5px; line-height: 2.1;
+  color: rgba(245,245,240,.65); white-space: pre; overflow-x: auto; position: relative;
+  margin-top: 24px;
+}
+.c-cmt { color: rgba(245,245,240,.22); }
+.c-red { color: #FF6B6B; }
+.c-teal { color: var(--teal); transition: color .3s; }
+.copy-css { position: absolute; top: 14px; right: 14px; background: var(--red); color: var(--bone); border: none; padding: 6px 14px; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border-radius: 2px; transition: background .3s; }
+.copy-css:hover { opacity: .85; }
+
+/* footer */
+.footer { padding: 20px 40px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.footer span { font-size: 9px; letter-spacing: 2px; color: rgba(245,245,240,.18); text-transform: uppercase; }
+.pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--red); animation: pulse 2s infinite; transition: background .3s; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-title">RABI<span>AT</span></div>
+  <div class="hdr-meta">
+    <div>Theme Studio · v2</div>
+    <div>Color + Font</div>
+  </div>
+</header>
+
+<!-- ══ RED TUNER ══ -->
+<section class="red-section">
+  <div class="sec-label">01 — Tune the Red</div>
+
+  <div class="red-row" id="redRow">
+    <div class="red-chip" onclick="setRed(this,'#C0392B','Signal Red','bold, visible, still dramatic')">
+      <div class="red-swatch" style="background:#C0392B;"></div>
+      <div class="red-info"><div class="red-name">Signal Red</div><div class="red-hex">#C0392B</div></div>
+    </div>
+    <div class="red-chip" onclick="setRed(this,'#E63946','Vivid Blood','electric punch, high contrast')">
+      <div class="red-swatch" style="background:#E63946;"></div>
+      <div class="red-info"><div class="red-name">Vivid Blood</div><div class="red-hex">#E63946</div></div>
+    </div>
+    <div class="red-chip" onclick="setRed(this,'#D62828','True Crimson','deep but readable, classic dramatic')">
+      <div class="red-swatch" style="background:#D62828;"></div>
+      <div class="red-info"><div class="red-name">True Crimson</div><div class="red-hex">#D62828</div></div>
+    </div>
+    <div class="red-chip" onclick="setRed(this,'#FF2D20','Hot Signal','bright, modern, bold pop')">
+      <div class="red-swatch" style="background:#FF2D20;"></div>
+      <div class="red-info"><div class="red-name">Hot Signal</div><div class="red-hex">#FF2D20</div></div>
+    </div>
+    <div class="red-chip sel" onclick="setRed(this,'#A81C1C','Bloodline','dark dramatic — original pick')">
+      <div class="red-swatch" style="background:#A81C1C;"></div>
+      <div class="red-info"><div class="red-name">Bloodline</div><div class="red-hex">#A81C1C</div></div>
+    </div>
+  </div>
+
+  <!-- live preview of red in context -->
+  <div class="red-preview-bar">
+    <div>
+      <div class="rp-label">Heading use</div>
+      <div class="rp-text" id="rp-text" style="color:var(--red);">RABIAT</div>
+    </div>
+    <div>
+      <div class="rp-label">Button</div>
+      <div class="rp-btn" id="rp-btn">Contact</div>
+    </div>
+    <div>
+      <div class="rp-label">Accent dot</div>
+      <div class="rp-dot" id="rp-dot"></div>
+    </div>
+    <div>
+      <div class="rp-label">Underline</div>
+      <div class="rp-border" id="rp-border">Selected work</div>
+    </div>
+    <div>
+      <div class="rp-label">On black BG</div>
+      <div style="background:#0A0A0A; padding:10px 16px; border-radius:2px; font-size:12px; letter-spacing:1px; color:var(--red); transition:color .3s;" id="rp-onblack">On Black →</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TEAL TOGGLE ══ -->
+<section class="teal-section">
+  <div class="sec-label">02 — The Rare Third Voice (Teal)</div>
+
+  <div class="teal-row" id="tealRow">
+    <div class="teal-chip" onclick="setTeal(this,'#5EEAD4','Ghost Tide','soft, sea-glass — barely there, perfect for rare use')">
+      <div class="teal-swatch" style="background:#5EEAD4;"></div>
+      <div class="teal-info">
+        <div class="teal-name">Ghost Tide</div>
+        <div class="teal-hex">#5EEAD4</div>
+        <div class="teal-note">soft, pale — like sea glass on black</div>
+      </div>
+    </div>
+    <div class="teal-chip" onclick="setTeal(this,'#3EB489','Mint Protocol','fresh minty green — slightly more green than teal')">
+      <div class="teal-swatch" style="background:#3EB489;"></div>
+      <div class="teal-info">
+        <div class="teal-name">Mint Protocol</div>
+        <div class="teal-hex">#3EB489</div>
+        <div class="teal-note">minty, airy — edges toward green</div>
+      </div>
+    </div>
+    <div class="teal-chip" onclick="setTeal(this,'#4ECDC4','Calm Signal','balanced teal — not too green, not too cyan')">
+      <div class="teal-swatch" style="background:#4ECDC4;"></div>
+      <div class="teal-info">
+        <div class="teal-name">Calm Signal</div>
+        <div class="teal-hex">#4ECDC4</div>
+        <div class="teal-note">balanced — sits right between mint and cyan</div>
+      </div>
+    </div>
+    <div class="teal-chip" onclick="setTeal(this,'#80CBC4','Frosted','muted, dusty — very quiet, very rare energy')">
+      <div class="teal-swatch" style="background:#80CBC4;"></div>
+      <div class="teal-info">
+        <div class="teal-name">Frosted</div>
+        <div class="teal-hex">#80CBC4</div>
+        <div class="teal-note">muted, dusty — almost grey-teal</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="teal-rule" id="tealRule">
+    <strong>Usage rule:</strong> Teal enters only when black, white, and red can't carry the moment alone — a link hover, a tag, a data highlight, a rare accent. It's the <em>third voice</em>, not a lead. Think of it like a cameo, not a main character.
+  </div>
+</section>
+
+<!-- ══ FONT TESTER ══ -->
+<section class="font-section">
+  <div class="sec-label">03 — Font Pairings</div>
+
+  <div class="font-tabs" id="fontTabs">
+    <button class="ftab active" onclick="setFont(this,'Bebas Neue','DM Mono','Bebas Neue + DM Mono','Display + Mono — the original. Bold headlines, precise body.')">Bebas + Mono</button>
+    <button class="ftab" onclick="setFont(this,'Unbounded','Space Grotesk','Unbounded + Space Grotesk','Chunky tech. Every letter feels architectural.')">Unbounded + Grotesk</button>
+    <button class="ftab" onclick="setFont(this,'Syne','DM Mono','Syne + DM Mono','Syne feels futuristic but warm. Great editorial energy.')">Syne + Mono</button>
+    <button class="ftab" onclick="setFont(this,'Rajdhani','Instrument Serif','Rajdhani + Instrument Serif','Techy condensed headlines with an editorial serif body.')">Rajdhani + Serif</button>
+    <button class="ftab" onclick="setFont(this,'Barlow Condensed','Space Grotesk','Barlow Condensed + Space Grotesk','Tall, clean, athletic. Big headlines that don\'t scream.')">Barlow + Grotesk</button>
+    <button class="ftab" onclick="setFont(this,'Playfair Display','DM Mono','Playfair Display + DM Mono','Dramatic serif meets cold mono. High contrast pairing.')">Playfair + Mono</button>
+  </div>
+
+  <div class="font-preview-area">
+    <nav class="fp-nav">
+      <div class="fp-logo" id="fp-logo" style="font-family:'Bebas Neue',sans-serif;">RABI<span>AT</span></div>
+      <div class="fp-links" style="font-family:'DM Mono',monospace;">
+        <span>Work</span><span>About</span><span>Contact</span>
+      </div>
+    </nav>
+    <div class="fp-hero">
+      <div class="fp-hero-eyebrow" id="fp-eyebrow">Designed with intention</div>
+      <div class="fp-hero-h1" id="fp-h1" style="font-family:'Bebas Neue',sans-serif;">
+        CHAOS,<br><em>REFINED.</em>
+      </div>
+      <div class="fp-hero-body" id="fp-body" style="font-family:'DM Mono',monospace;">
+        Where minimal meets dramatic. A design system built for someone who owns six pairs of headphones and makes it look intentional.
+      </div>
+      <div class="fp-btns">
+        <div class="fp-btn-red" id="fp-btn-red" style="font-family:'DM Mono',monospace;">View Work</div>
+        <div class="fp-btn-outline" id="fp-btn-out" style="font-family:'DM Mono',monospace;">Get in Touch</div>
+      </div>
+    </div>
+    <div class="fp-cards">
+      <div class="fp-card">
+        <div class="fp-card-tag" id="fc-tag1" style="font-family:'DM Mono',monospace;">Strategy</div>
+        <div class="fp-card-title" id="fc-title1" style="font-family:'Bebas Neue',sans-serif;">Going Viral is the New Going for Gold</div>
+        <div class="fp-card-body" id="fc-body1" style="font-family:'DM Mono',monospace;">How social media rewrote the rules of Olympic fame.</div>
+      </div>
+      <div class="fp-card">
+        <div class="fp-card-tag" id="fc-tag2" style="font-family:'DM Mono',monospace;">Design</div>
+        <div class="fp-card-title" id="fc-title2" style="font-family:'Bebas Neue',sans-serif;">The Rabiat System</div>
+        <div class="fp-card-body" id="fc-body2" style="font-family:'DM Mono',monospace;">Black. White. Red. A rare teal. Built to last.</div>
+      </div>
+      <div class="fp-card">
+        <div class="fp-card-tag" id="fc-tag3" style="font-family:'DM Mono',monospace;">Culture</div>
+        <div class="fp-card-title" id="fc-title3" style="font-family:'Bebas Neue',sans-serif;">Chaotic Minimal</div>
+        <div class="fp-card-body" id="fc-body3" style="font-family:'DM Mono',monospace;">Six headphones. One aesthetic. Zero compromise.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="font-info-bar" id="fontInfoBar">
+    <div><div class="fi-label">Display / Heading</div><div class="fi-value" id="fi-display">Bebas Neue</div></div>
+    <div><div class="fi-label">Body / UI</div><div class="fi-value" id="fi-body">DM Mono</div></div>
+    <div><div class="fi-label">Character</div><div class="fi-pair" id="fi-char">Display + Mono — the original. Bold headlines, precise body.</div></div>
+  </div>
+</section>
+
+<!-- ══ FULL PALETTE ══ -->
+<section class="palette-section">
+  <div class="sec-label">04 — Full Named Palette</div>
+  <div class="palette-grid">
+    <div class="pchip" style="background:#0A0A0A;color:#F5F5F0;" onclick="copyC(this,'#0A0A0A')"><div class="pchip-name">Void</div><div class="pchip-hex">#0A0A0A</div><div class="pchip-role">Base BG</div><div class="pchip-tag">COPIED</div></div>
+    <div class="pchip" style="background:#141414;color:#F5F5F0;" onclick="copyC(this,'#141414')"><div class="pchip-name">Obsidian</div><div class="pchip-hex">#141414</div><div class="pchip-role">Surface</div><div class="pchip-tag">COPIED</div></div>
+    <div class="pchip" style="background:#1E1E1E;color:#F5F5F0;" onclick="copyC(this,'#1E1E1E')"><div class="pchip-name">Shadow</div><div class="pchip-hex">#1E1E1E</div><div class="pchip-role">Card BG</div><div class="pchip-tag">COPIED</div></div>
+    <div class="pchip" style="background:#2A2A2A;color:#F5F5F0;" onclick="copyC(this,'#2A2A2A')"><div class="pchip-name">Midnight</div><div class="pchip-hex">#2A2A2A</div><div class="pchip-role">Elevated</div><div class="pchip-tag">COPIED</div></div>
+    <div class="pchip" style="background:#F5F5F0;color:#0A0A0A;" onclick="copyC(this,'#F5F5F0')"><div class="pchip-name">Bone</div><div class="pchip-hex">#F5F5F0</div><div class="pchip-role">Primary White</div><div class="pchip-tag" style="background:rgba(0,0,0,0.15);color:#0A0A0A;">COPIED</div></div>
+    <div class="pchip" style="background:#E8E8E3;color:#0A0A0A;" onclick="copyC(this,'#E8E8E3')"><div class="pchip-name">Pearl</div><div class="pchip-hex">#E8E8E3</div><div class="pchip-role">Secondary White</div><div class="pchip-tag" style="background:rgba(0,0,0,0.12);color:#0A0A0A;">COPIED</div></div>
+    <div class="pchip" style="background:#A0A09A;color:#0A0A0A;" onclick="copyC(this,'#A0A09A')"><div class="pchip-name">Ash</div><div class="pchip-hex">#A0A09A</div><div class="pchip-role">Muted Text</div><div class="pchip-tag" style="background:rgba(0,0,0,0.15);color:#0A0A0A;">COPIED</div></div>
+    <div class="pchip" style="background:#5A5A55;color:#F5F5F0;" onclick="copyC(this,'#5A5A55')"><div class="pchip-name">Slate</div><div class="pchip-hex">#5A5A55</div><div class="pchip-role">Subdued</div><div class="pchip-tag">COPIED</div></div>
+
+    <!-- red chips — dynamic -->
+    <div class="pchip" id="pchip-red" style="background:#A81C1C;color:#F5F5F0;" onclick="copyC(this, document.getElementById('pchip-red').dataset.hex)"><div class="pchip-name" id="pchip-red-name">Bloodline</div><div class="pchip-hex" id="pchip-red-hex">#A81C1C</div><div class="pchip-role">Primary Red</div><div class="pchip-tag">COPIED</div></div>
+    <div class="pchip" style="background:#6B0000;color:#F5F5F0;" onclick="copyC(this,'#6B0000')"><div class="pchip-name">Marrow</div><div class="pchip-hex">#6B0000</div><div class="pchip-role">Deep Red</div><div class="pchip-tag">COPIED</div></div>
+    <div class="pchip" style="background:#3D0000;color:#F5F5F0;" onclick="copyC(this,'#3D0000')"><div class="pchip-name">Ember</div><div class="pchip-hex">#3D0000</div><div class="pchip-role">Red Tint BG</div><div class="pchip-tag">COPIED</div></div>
+
+    <!-- teal chips — dynamic -->
+    <div class="pchip" id="pchip-teal" style="background:#5EEAD4;color:#0A0A0A;" onclick="copyC(this, document.getElementById('pchip-teal').dataset.hex)"><div class="pchip-name" id="pchip-teal-name">Ghost Tide</div><div class="pchip-hex" id="pchip-teal-hex">#5EEAD4</div><div class="pchip-role">Rare Accent</div><div class="pchip-tag" style="background:rgba(0,0,0,0.2);">COPIED</div></div>
+  </div>
+</section>
+
+<!-- ══ CSS EXPORT ══ -->
+<section class="export-section">
+  <div class="sec-label">05 — CSS Variables</div>
+  <div style="position:relative;">
+<pre class="codebox"><button class="copy-css" onclick="copyCSSBlock()">COPY ALL</button><span class="c-cmt">/* ════════════════════════════════
+   RABIAT THEME · v1.0
+   Personal Design System
+   ════════════════════════════════ */</span>
+
+:root {
+
+  <span class="c-cmt">/* ── BLACKS ────────────────── */</span>
+  --r-void:      #0A0A0A;   <span class="c-cmt">/* base background          */</span>
+  --r-obsidian:  #141414;   <span class="c-cmt">/* surface                  */</span>
+  --r-shadow:    #1E1E1E;   <span class="c-cmt">/* card background          */</span>
+  --r-midnight:  #2A2A2A;   <span class="c-cmt">/* elevated surface         */</span>
+
+  <span class="c-cmt">/* ── WHITES ────────────────── */</span>
+  --r-bone:      #F5F5F0;   <span class="c-cmt">/* primary text / white     */</span>
+  --r-pearl:     #E8E8E3;   <span class="c-cmt">/* secondary white          */</span>
+  --r-ash:       #A0A09A;   <span class="c-cmt">/* muted text               */</span>
+  --r-slate:     #5A5A55;   <span class="c-cmt">/* subdued / borders        */</span>
+
+  <span class="c-cmt">/* ── REDS ──────────────────── */</span>
+  --r-bloodline: <span class="c-red" id="css-red">#A81C1C</span>;   <span class="c-cmt">/* primary red (your pick)  */</span>
+  --r-marrow:    #6B0000;   <span class="c-cmt">/* deep red                 */</span>
+  --r-ember:     #3D0000;   <span class="c-cmt">/* red tint background      */</span>
+
+  <span class="c-cmt">/* ── TEAL (rare 3rd voice) ─── */</span>
+  --r-teal:      <span class="c-teal" id="css-teal">#5EEAD4</span>;   <span class="c-cmt">/* use sparingly            */</span>
+
+  <span class="c-cmt">/* ── FONTS ─────────────────── */</span>
+  --r-font-display: <span id="css-font-disp">'Bebas Neue'</span>, sans-serif;
+  --r-font-body:    <span id="css-font-body">'DM Mono'</span>, monospace;
+
+}</pre>
+  </div>
+</section>
+
+<footer class="footer">
+  <span>Rabiat Theme · v2 · Color + Font</span>
+  <div class="pulse" id="footerPulse"></div>
+  <span>Click any chip to copy</span>
+</footer>
+
+<script>
+// ── FONTS CONFIG ──
+const fontMap = {
+  'Bebas Neue':        { stack: "'Bebas Neue', sans-serif",        isDisplay: true },
+  'Unbounded':         { stack: "'Unbounded', sans-serif",         isDisplay: true },
+  'Syne':              { stack: "'Syne', sans-serif",              isDisplay: false },
+  'Rajdhani':          { stack: "'Rajdhani', sans-serif",          isDisplay: true },
+  'Barlow Condensed':  { stack: "'Barlow Condensed', sans-serif",  isDisplay: true },
+  'Playfair Display':  { stack: "'Playfair Display', serif",       isDisplay: true },
+  'DM Mono':           { stack: "'DM Mono', monospace",            isDisplay: false },
+  'Space Grotesk':     { stack: "'Space Grotesk', sans-serif",     isDisplay: false },
+  'Instrument Serif':  { stack: "'Instrument Serif', serif",       isDisplay: false },
+};
+
+function setFont(btn, displayFont, bodyFont, label, desc) {
+  document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const dStack = fontMap[displayFont]?.stack || `'${displayFont}', sans-serif`;
+  const bStack = fontMap[bodyFont]?.stack   || `'${bodyFont}', sans-serif`;
+
+  // logo + headings
+  document.getElementById('fp-logo').style.fontFamily = dStack;
+  document.getElementById('fp-h1').style.fontFamily   = dStack;
+  document.getElementById('fc-title1').style.fontFamily = dStack;
+  document.getElementById('fc-title2').style.fontFamily = dStack;
+  document.getElementById('fc-title3').style.fontFamily = dStack;
+
+  // body / UI
+  const bodyEls = ['fp-body','fp-btn-red','fp-btn-out','fp-eyebrow','fc-tag1','fc-tag2','fc-tag3','fc-body1','fc-body2','fc-body3'];
+  bodyEls.forEach(id => document.getElementById(id).style.fontFamily = bStack);
+  document.querySelectorAll('.fp-links').forEach(el => el.style.fontFamily = bStack);
+
+  // info bar
+  document.getElementById('fi-display').textContent = displayFont;
+  document.getElementById('fi-body').textContent = bodyFont;
+  document.getElementById('fi-char').textContent = desc;
+
+  // css export
+  document.getElementById('css-font-disp').textContent = `'${displayFont}'`;
+  document.getElementById('css-font-body').textContent  = `'${bodyFont}'`;
+}
+
+// ── RED ──
+function setRed(chip, hex, name, desc) {
+  document.querySelectorAll('.red-chip').forEach(c => c.classList.remove('sel'));
+  chip.classList.add('sel');
+  document.documentElement.style.setProperty('--red', hex);
+
+  // palette chip
+  document.getElementById('pchip-red').style.background = hex;
+  document.getElementById('pchip-red').dataset.hex = hex;
+  document.getElementById('pchip-red-name').textContent = name;
+  document.getElementById('pchip-red-hex').textContent = hex;
+
+  // css export
+  document.getElementById('css-red').textContent = hex;
+}
+
+// ── TEAL ──
+function setTeal(chip, hex, name, desc) {
+  document.querySelectorAll('.teal-chip').forEach(c => c.classList.remove('sel'));
+  chip.classList.add('sel');
+  document.documentElement.style.setProperty('--teal', hex);
+
+  // palette chip
+  document.getElementById('pchip-teal').style.background = hex;
+  document.getElementById('pchip-teal').dataset.hex = hex;
+  document.getElementById('pchip-teal-name').textContent = name;
+  document.getElementById('pchip-teal-hex').textContent = hex;
+
+  // css export
+  document.getElementById('css-teal').textContent = hex;
+  document.getElementById('css-teal').style.color = hex;
+
+  // teal rule border
+  document.getElementById('tealRule').style.borderColor = hex;
+
+  // preview button
+  document.getElementById('fp-btn-out').style.color = hex;
+  document.getElementById('fp-btn-out').style.borderColor = hex;
+  document.getElementById('fp-eyebrow').style.color = hex;
+}
+
+// ── COPY ──
+function copyC(el, hex) {
+  navigator.clipboard.writeText(hex).catch(()=>{});
+  const tag = el.querySelector('.pchip-tag');
+  tag.classList.add('show');
+  setTimeout(()=>tag.classList.remove('show'), 1500);
+}
+
+function copyCSSBlock() {
+  const text = document.querySelector('.codebox').innerText;
+  navigator.clipboard.writeText(text).catch(()=>{});
+  const btn = document.querySelector('.copy-css');
+  btn.textContent = 'COPIED!';
+  setTimeout(()=>btn.textContent='COPY ALL', 2000);
+}
+
+// init selections
+document.querySelector('.red-chip:last-child').classList.add('sel');
+document.querySelector('.teal-chip:first-child').classList.add('sel');
+</script>
+</body>
+</html>

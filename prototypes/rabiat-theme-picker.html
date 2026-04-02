@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rabiat's Theme — Color Studio</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #0A0A0A;
+    --white: #F5F5F0;
+    --red: #8B0000;
+    --teal: #2DD4BF;
+    --surface: #141414;
+    --border: rgba(245,245,240,0.08);
+  }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 48px 40px 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+  }
+  .title-block {}
+  .title-label {
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: rgba(245,245,240,0.35);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .title-main {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 8vw, 96px);
+    line-height: 0.9;
+    letter-spacing: 2px;
+    color: var(--white);
+  }
+  .title-main span {
+    color: var(--red);
+  }
+  .version-tag {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: rgba(245,245,240,0.25);
+    text-transform: uppercase;
+    margin-top: 12px;
+  }
+  .header-right {
+    text-align: right;
+    font-size: 11px;
+    color: rgba(245,245,240,0.3);
+    letter-spacing: 1px;
+    line-height: 2;
+  }
+
+  /* TEAL SELECTOR */
+  .teal-section {
+    padding: 48px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 24px;
+  }
+  .teal-heading {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: rgba(245,245,240,0.7);
+    margin-bottom: 32px;
+    font-style: italic;
+  }
+
+  .teal-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
+  .teal-card {
+    cursor: pointer;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+    position: relative;
+  }
+  .teal-card:hover { transform: translateY(-3px); }
+  .teal-card.selected { border-color: var(--white); }
+  .teal-card.selected::after {
+    content: '✓ SELECTED';
+    position: absolute;
+    top: 8px; right: 8px;
+    font-size: 8px;
+    letter-spacing: 2px;
+    background: var(--black);
+    color: var(--white);
+    padding: 3px 6px;
+    border-radius: 2px;
+  }
+
+  .teal-swatch {
+    height: 120px;
+    width: 100%;
+    transition: background 0.3s;
+  }
+  .teal-info {
+    padding: 14px;
+    background: var(--surface);
+  }
+  .teal-name {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+  .teal-hex {
+    font-size: 10px;
+    color: rgba(245,245,240,0.4);
+    letter-spacing: 1px;
+  }
+  .teal-desc {
+    font-size: 9px;
+    color: rgba(245,245,240,0.3);
+    margin-top: 6px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* FULL PALETTE PREVIEW */
+  .palette-section {
+    padding: 48px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .palette-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 2px;
+    margin-top: 32px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .palette-chip {
+    padding: 24px 16px 20px;
+    position: relative;
+    cursor: pointer;
+    transition: flex 0.3s;
+  }
+  .palette-chip:hover { filter: brightness(1.1); }
+
+  .chip-name {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .chip-hex {
+    font-size: 10px;
+    opacity: 0.65;
+    letter-spacing: 1px;
+  }
+  .chip-role {
+    font-size: 8px;
+    opacity: 0.45;
+    margin-top: 6px;
+    letter-spacing: 1px;
+    font-style: italic;
+  }
+  .chip-copied {
+    position: absolute;
+    top: 8px; right: 8px;
+    font-size: 8px;
+    background: rgba(0,0,0,0.5);
+    padding: 2px 5px;
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    letter-spacing: 1px;
+  }
+  .chip-copied.show { opacity: 1; }
+
+  /* LIVE PREVIEW */
+  .preview-section {
+    padding: 48px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .preview-box {
+    margin-top: 32px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .preview-nav {
+    background: var(--black);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .preview-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 3px;
+  }
+  .preview-logo span { color: var(--red); }
+  .preview-nav-links {
+    display: flex;
+    gap: 24px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(245,245,240,0.4);
+  }
+  .preview-nav-links a { color: inherit; text-decoration: none; }
+  .preview-nav-links a:hover { color: var(--white); }
+
+  .preview-hero {
+    padding: 64px 40px;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+  .preview-hero::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: var(--red);
+    opacity: 0.04;
+  }
+  .preview-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 20%;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: var(--teal);
+    opacity: 0.06;
+    transition: background 0.4s;
+  }
+  .preview-eyebrow {
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--teal);
+    transition: color 0.4s;
+    margin-bottom: 16px;
+  }
+  .preview-h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 5vw, 64px);
+    line-height: 1;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+  .preview-h1 em { color: var(--red); font-style: normal; }
+  .preview-p {
+    font-size: 12px;
+    color: rgba(245,245,240,0.5);
+    line-height: 1.8;
+    max-width: 400px;
+    margin-bottom: 32px;
+    font-style: italic;
+    font-family: 'Instrument Serif', serif;
+    font-size: 15px;
+  }
+  .preview-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--red);
+    color: var(--white);
+    border: none;
+    padding: 12px 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-teal {
+    background: transparent;
+    color: var(--teal);
+    border: 1px solid var(--teal);
+    padding: 12px 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.4s, color 0.4s, border-color 0.4s;
+  }
+  .btn-teal:hover { background: var(--teal); color: var(--black); }
+
+  /* CSS EXPORT */
+  .export-section {
+    padding: 48px 40px;
+  }
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 32px;
+    margin-top: 24px;
+    font-size: 11px;
+    line-height: 2;
+    color: rgba(245,245,240,0.7);
+    white-space: pre;
+    overflow-x: auto;
+    position: relative;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: var(--red);
+    color: var(--white);
+    border: none;
+    padding: 6px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .copy-btn:hover { opacity: 0.8; }
+
+  .red-highlight { color: #FF6B6B; }
+  .teal-highlight { color: var(--teal); transition: color 0.4s; }
+  .comment { color: rgba(245,245,240,0.25); }
+
+  /* FOOTER STRIP */
+  .footer-strip {
+    padding: 24px 40px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .footer-strip span {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: rgba(245,245,240,0.2);
+    text-transform: uppercase;
+  }
+  .footer-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ANIMATIONS */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeIn 0.5s forwards;
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in:nth-child(1) { animation-delay: 0.1s; }
+  .fade-in:nth-child(2) { animation-delay: 0.2s; }
+  .fade-in:nth-child(3) { animation-delay: 0.3s; }
+  .fade-in:nth-child(4) { animation-delay: 0.4s; }
+
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="title-block">
+    <div class="title-label">Personal Design System · v1.0</div>
+    <div class="title-main">RABI<span>AT</span><br>THEME</div>
+    <div class="version-tag">Est. 2025 · Color Studio</div>
+  </div>
+  <div class="header-right">
+    <div>SELECT YOUR TEAL</div>
+    <div>PREVIEW LIVE</div>
+    <div>COPY CSS VARS</div>
+  </div>
+</header>
+
+<!-- TEAL SELECTOR -->
+<section class="teal-section">
+  <div class="section-label">01 — Pick Your Teal</div>
+  <div class="teal-heading">Four teal universes. One is yours.</div>
+  <div class="teal-options" id="tealOptions">
+
+    <div class="teal-card fade-in" onclick="selectTeal(this, '#3EB489', 'Mint Protocol', 'minty fresh, airy — clean like a hospital that parties')">
+      <div class="teal-swatch" style="background:#3EB489;"></div>
+      <div class="teal-info">
+        <div class="teal-name">Mint Protocol</div>
+        <div class="teal-hex">#3EB489</div>
+        <div class="teal-desc">light, airy, fresh — the mint you described</div>
+      </div>
+    </div>
+
+    <div class="teal-card fade-in" onclick="selectTeal(this, '#0D9488', 'Aurora Deep', 'jewel-toned, rich — that green-purple sky feeling')">
+      <div class="teal-swatch" style="background:#0D9488;"></div>
+      <div class="teal-info">
+        <div class="teal-name">Aurora Deep</div>
+        <div class="teal-hex">#0D9488</div>
+        <div class="teal-desc">rich, jewel-toned — aurora borealis energy</div>
+      </div>
+    </div>
+
+    <div class="teal-card fade-in" onclick="selectTeal(this, '#2DD4BF', 'Neon Lagoon', 'electric but not harsh — vibrant and clean')">
+      <div class="teal-swatch" style="background:#2DD4BF;"></div>
+      <div class="teal-info">
+        <div class="teal-name">Neon Lagoon</div>
+        <div class="teal-hex">#2DD4BF</div>
+        <div class="teal-desc">electric, vibrant — pops hard on black</div>
+      </div>
+    </div>
+
+    <div class="teal-card fade-in" onclick="selectTeal(this, '#5EEAD4', 'Ghost Tide', 'soft, dreamy — barely-there teal like sea glass')">
+      <div class="teal-swatch" style="background:#5EEAD4;"></div>
+      <div class="teal-info">
+        <div class="teal-name">Ghost Tide</div>
+        <div class="teal-hex">#5EEAD4</div>
+        <div class="teal-desc">soft, pale — delicate and dreamy</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FULL PALETTE -->
+<section class="palette-section">
+  <div class="section-label">02 — Full Palette</div>
+
+  <div class="palette-grid" id="paletteGrid">
+    <!-- Row 1: Blacks -->
+    <div class="palette-chip" style="background:#0A0A0A; color:#F5F5F0;" onclick="copyHex(this,'#0A0A0A')">
+      <div class="chip-name">Void</div>
+      <div class="chip-hex">#0A0A0A</div>
+      <div class="chip-role">Base Black</div>
+      <div class="chip-copied">COPIED</div>
+    </div>
+    <div class="palette-chip" style="background:#141414; color:#F5F5F0;" onclick="copyHex(this,'#141414')">
+      <div class="chip-name">Obsidian</div>
+      <div class="chip-hex">#141414</div>
+      <div class="chip-role">Surface</div>
+      <div class="chip-copied">COPIED</div>
+    </div>
+    <div class="palette-chip" style="background:#1E1E1E; color:#F5F5F0;" onclick="copyHex(this,'#1E1E1E')">
+      <div class="chip-name">Shadow</div>
+      <div class="chip-hex">#1E1E1E</div>
+      <div class="chip-role">Card BG</div>
+      <div class="chip-copied">COPIED</div>
+    </div>
+    <div class="palette-chip" style="background:#2A2A2A; color:#F5F5F0;" onclick="copyHex(this,'#2A2A2A')">
+      <div class="chip-name">Midnight</div>
+      <div class="chip-hex">#2A2A2A</div>
+      <div class="chip-role">Elevated Surface</div>
+      <div class="chip-copied">COPIED</div>
+    </div>
+
+    <!-- Row 2: Whites -->
+    <div class="palette-chip" style="background:#F5F5F0; color:#0A0A0A;" onclick="copyHex(this,'#F5F5F0')">
+      <div class="chip-name">Bone</div>
+      <div class="chip-hex">#F5F5F0</div>
+      <div class="chip-role">Primary White</div>
+      <div class="chip-copied" style="background:rgba(255,255,255,0.5); color:#0A0A0A;">COPIED</div>
+    </div>
+    <div class="palette-chip" style="background:#E8E8E3; color:#0A0A0A;" onclick="copyHex(this,'#E8E8E3')">
+      <div class="chip-name">Pearl</div>
+      <div class="chip-hex">#E8E8E3</div>
+      <div class="chip-role">Secondary White</div>
+      <div class="chip-copied" style="background:rgba(255,255,255,0.5); color:#0A0A0A;">COPIED</div>
+    </div>
+    <div class="palette-chip" style="background:#A0A09A; color:#0A0A0A;" onclick="copyHex(this,'#A0A09A')">
+      <div class="chip-name">Ash</div>
+      <div class="chip-hex">#A0A09A</div>
+      <div class="chip-role">Muted Text</div>
+      <div class="chip-copied" style="background:rgba(255,255,255,0.4); color:#0A0A0A;">COPIED</div>
+    </div>
+    <div class="palette-chip" style="background:#5A5A55; color:#F5F5F0;" onclick="copyHex(this,'#5A5A55')">
+      <div class="chip-name">Slate</div>
+      <div class="chip-hex">#5A5A55</div>
+      <div class="chip-role">Subdued</div>
+      <div class="chip-copied">COPIED</div>
+    </div>
+
+    <!-- Row 3: Reds -->
+    <div class="palette-chip" style="background:#8B0000; color:#F5F5F0;" onclick="copyHex(this,'#8B0000')">
+      <div class="chip-name">Bloodline</div>
+      <div class="chip-hex">#8B0000</div>
+      <div class="chip-role">Primary Red</div>
+      <div class="chip-copied">COPIED</div>
+    </div>
+    <div class="palette-chip" style="background:#6B0000; color:#F5F5F0;" onclick="copyHex(this,'#6B0000')">
+      <div class="chip-name">Marrow</div>
+      <div class="chip-hex">#6B0000</div>
+      <div class="chip-role">Deep Red</div>
+      <div class="chip-copied">COPIED</div>
+    </div>
+    <div class="palette-chip" style="background:#B50000; color:#F5F5F0;" onclick="copyHex(this,'#B50000')">
+      <div class="chip-name">Signal</div>
+      <div class="chip-hex">#B50000</div>
+      <div class="chip-role">Bright Red</div>
+      <div class="chip-copied">COPIED</div>
+    </div>
+    <div class="palette-chip" style="background:#3D0000; color:#F5F5F0;" onclick="copyHex(this,'#3D0000')">
+      <div class="chip-name">Ember</div>
+      <div class="chip-hex">#3D0000</div>
+      <div class="chip-role">Red Tint BG</div>
+      <div class="chip-copied">COPIED</div>
+    </div>
+
+    <!-- Row 4: Teals (dynamic) -->
+    <div class="palette-chip" id="tealPrimary" style="background:#2DD4BF; color:#0A0A0A;" onclick="copyHex(this, document.querySelector('#tealPrimary .chip-hex').textContent)">
+      <div class="chip-name" id="tealPrimaryName">Neon Lagoon</div>
+      <div class="chip-hex" id="tealPrimaryHex">#2DD4BF</div>
+      <div class="chip-role">Primary Teal</div>
+      <div class="chip-copied" style="background:rgba(0,0,0,0.3);">COPIED</div>
+    </div>
+    <div class="palette-chip" id="tealDark" style="background:#1A9B8A; color:#F5F5F0;" onclick="copyHex(this, document.querySelector('#tealDark .chip-hex').textContent)">
+      <div class="chip-name" id="tealDarkName">Deep Current</div>
+      <div class="chip-hex" id="tealDarkHex">#1A9B8A</div>
+      <div class="chip-role">Dark Teal</div>
+      <div class="chip-copied">COPIED</div>
+    </div>
+    <div class="palette-chip" id="tealLight" style="background:#7EEADC; color:#0A0A0A;" onclick="copyHex(this, document.querySelector('#tealLight .chip-hex').textContent)">
+      <div class="chip-name">Vapor</div>
+      <div class="chip-hex" id="tealLightHex">#7EEADC</div>
+      <div class="chip-role">Light Teal</div>
+      <div class="chip-copied" style="background:rgba(0,0,0,0.2);">COPIED</div>
+    </div>
+    <div class="palette-chip" id="tealBg" style="background:#031A18; color:#F5F5F0;" onclick="copyHex(this, document.querySelector('#tealBg .chip-hex').textContent)">
+      <div class="chip-name">Depth</div>
+      <div class="chip-hex" id="tealBgHex">#031A18</div>
+      <div class="chip-role">Teal Tint BG</div>
+      <div class="chip-copied">COPIED</div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE PREVIEW -->
+<section class="preview-section">
+  <div class="section-label">03 — Live Preview</div>
+
+  <div class="preview-box">
+    <nav class="preview-nav">
+      <div class="preview-logo">RABI<span>AT</span></div>
+      <div class="preview-nav-links">
+        <a href="#">Work</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+      </div>
+    </nav>
+    <div class="preview-hero">
+      <div class="preview-eyebrow" id="prevEyebrow">DESIGNED WITH INTENTION</div>
+      <div class="preview-h1">CHAOS,<br><em>REFINED.</em></div>
+      <div class="preview-p">Where minimal meets dramatic. A design system built for someone who owns 6 headphones and makes it look intentional.</div>
+      <div class="preview-btns">
+        <button class="btn-primary">View Work</button>
+        <button class="btn-teal" id="previewTealBtn">Get in Touch</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CSS EXPORT -->
+<section class="export-section">
+  <div class="section-label">04 — CSS Variables</div>
+  <div style="position:relative;">
+    <pre class="code-block" id="cssExport"><span class="comment">/* ================================
+   RABIAT THEME v1.0
+   Personal Design System
+   ================================ */</span>
+
+:root {
+  <span class="comment">/* ── BLACKS ── */</span>
+  --r-void:     #0A0A0A;  <span class="comment">/* base background */</span>
+  --r-obsidian: #141414;  <span class="comment">/* surface */</span>
+  --r-shadow:   #1E1E1E;  <span class="comment">/* card background */</span>
+  --r-midnight: #2A2A2A;  <span class="comment">/* elevated surface */</span>
+
+  <span class="comment">/* ── WHITES ── */</span>
+  --r-bone:   #F5F5F0;    <span class="comment">/* primary text / white */</span>
+  --r-pearl:  #E8E8E3;    <span class="comment">/* secondary white */</span>
+  --r-ash:    #A0A09A;    <span class="comment">/* muted text */</span>
+  --r-slate:  #5A5A55;    <span class="comment">/* subdued */</span>
+
+  <span class="comment">/* ── REDS ── */</span>
+  --r-bloodline: #8B0000; <span class="comment">/* primary red */</span>
+  --r-marrow:    #6B0000; <span class="comment">/* deep red */</span>
+  --r-signal:    #B50000; <span class="comment">/* bright red */</span>
+  --r-ember:     #3D0000; <span class="comment">/* red tint background */</span>
+
+  <span class="comment">/* ── TEAL (YOUR PICK) ── */</span>
+  --r-teal:       <span class="teal-highlight" id="cssVarTeal">#2DD4BF</span>; <span class="comment">/* primary — Neon Lagoon */</span>
+  --r-teal-dark:  <span class="teal-highlight" id="cssVarTealDark">#1A9B8A</span>; <span class="comment">/* deep current */</span>
+  --r-teal-light: <span class="teal-highlight" id="cssVarTealLight">#7EEADC</span>; <span class="comment">/* vapor */</span>
+  --r-teal-bg:    <span class="teal-highlight" id="cssVarTealBg">#031A18</span>;  <span class="comment">/* depth (tint bg) */</span>
+}</pre>
+    <button class="copy-btn" onclick="copyCSS()">COPY</button>
+  </div>
+</section>
+
+<footer class="footer-strip">
+  <span>Rabiat Theme · Color v1.0 · 2025</span>
+  <div class="footer-dot"></div>
+  <span>Click any swatch to copy hex</span>
+</footer>
+
+<script>
+const teals = {
+  '#3EB489': {
+    name: 'Mint Protocol',
+    dark: '#2A8A61',
+    light: '#7ECBA3',
+    bg: '#051A0F',
+    cssLabel: 'Mint Protocol'
+  },
+  '#0D9488': {
+    name: 'Aurora Deep',
+    dark: '#0A706A',
+    light: '#5CC6BF',
+    bg: '#021614',
+    cssLabel: 'Aurora Deep'
+  },
+  '#2DD4BF': {
+    name: 'Neon Lagoon',
+    dark: '#1A9B8A',
+    light: '#7EEADC',
+    bg: '#031A18',
+    cssLabel: 'Neon Lagoon'
+  },
+  '#5EEAD4': {
+    name: 'Ghost Tide',
+    dark: '#3AB89E',
+    light: '#9FF5E4',
+    bg: '#041F1A',
+    cssLabel: 'Ghost Tide'
+  }
+};
+
+function selectTeal(card, hex, name, desc) {
+  document.querySelectorAll('.teal-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+
+  const t = teals[hex] || { dark: hex, light: hex, bg: '#031A18', name: name };
+
+  // Update CSS variable
+  document.documentElement.style.setProperty('--teal', hex);
+
+  // Update palette
+  document.getElementById('tealPrimary').style.background = hex;
+  document.getElementById('tealPrimary').style.color = isLight(hex) ? '#0A0A0A' : '#F5F5F0';
+  document.getElementById('tealPrimaryName').textContent = t.name;
+  document.getElementById('tealPrimaryHex').textContent = hex;
+
+  document.getElementById('tealDark').style.background = t.dark;
+  document.getElementById('tealDarkHex').textContent = t.dark;
+
+  document.getElementById('tealLight').style.background = t.light;
+  document.getElementById('tealLightHex').textContent = t.light;
+  document.getElementById('tealLight').style.color = isLight(t.light) ? '#0A0A0A' : '#F5F5F0';
+
+  document.getElementById('tealBg').style.background = t.bg;
+  document.getElementById('tealBgHex').textContent = t.bg;
+
+  // Update preview
+  document.getElementById('prevEyebrow').style.color = hex;
+  document.getElementById('previewTealBtn').style.color = hex;
+  document.getElementById('previewTealBtn').style.borderColor = hex;
+  document.getElementById('previewTealBtn').onmouseenter = function() {
+    this.style.background = hex;
+    this.style.color = '#0A0A0A';
+  };
+  document.getElementById('previewTealBtn').onmouseleave = function() {
+    this.style.background = 'transparent';
+    this.style.color = hex;
+  };
+
+  // Update CSS export
+  document.getElementById('cssVarTeal').textContent = hex;
+  document.getElementById('cssVarTeal').style.color = hex;
+  document.getElementById('cssVarTealDark').textContent = t.dark;
+  document.getElementById('cssVarTealDark').style.color = t.dark;
+  document.getElementById('cssVarTealLight').textContent = t.light;
+  document.getElementById('cssVarTealLight').style.color = t.light;
+  document.getElementById('cssVarTealBg').textContent = t.bg;
+  document.getElementById('cssVarTealBg').style.color = t.light;
+
+  // Update all .teal-highlight spans
+  document.querySelectorAll('.teal-highlight').forEach(el => el.style.color = hex);
+
+  // Update preview hero ::after color via body class trick
+  document.querySelector('.preview-hero').style.setProperty('--teal', hex);
+}
+
+function isLight(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return (r*299 + g*587 + b*114)/1000 > 128;
+}
+
+function copyHex(el, hex) {
+  navigator.clipboard.writeText(hex).catch(() => {});
+  const tag = el.querySelector('.chip-copied');
+  tag.classList.add('show');
+  setTimeout(() => tag.classList.remove('show'), 1500);
+}
+
+function copyCSS() {
+  const text = document.getElementById('cssExport').innerText;
+  navigator.clipboard.writeText(text).catch(() => {});
+  const btn = document.querySelector('.copy-btn');
+  btn.textContent = 'COPIED!';
+  setTimeout(() => btn.textContent = 'COPY', 2000);
+}
+</script>
+</body>
+</html>
