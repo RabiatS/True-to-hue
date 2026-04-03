@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { ThemeData, ThemeVariation, ColorChip } from '../services/gemini';
+import { ThemeData, ThemeVariation, ColorChip } from '../services/themeService';
 import { isLight, copyToClipboard } from '../utils/colors';
 import { jsPDF } from 'jspdf';
 import JSZip from 'jszip';

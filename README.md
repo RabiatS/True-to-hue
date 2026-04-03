@@ -2,11 +2,9 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# True to Hue
 
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/d263013a-1334-43c7-93dc-19cc720da809
+AI-powered brand color system generator with export tools for CSS, tokens, and handoff assets.
 
 ## Run Locally
 
@@ -14,10 +12,10 @@ View your app in AI Studio: https://ai.studio/apps/d263013a-1334-43c7-93dc-19cc7
 
 
 1. Install dependencies:
-   `npm install`
+   `npm.cmd install`
 2. Set the `VITE_OPENAI_API_KEY` in [.env.local](.env.local) to your OpenAI API key
 3. Run the app:
-   `npm run dev`
+   `npm.cmd run dev`
 
 ## Project Structure
 

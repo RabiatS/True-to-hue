@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import LandingPage from './components/LandingPage';
 import StudioPage from './components/StudioPage';
-import { generateTheme, ThemeData } from './services/gemini';
+import { generateTheme, ThemeData } from './services/themeService';
 
 export default function App() {
   const [theme, setTheme] = useState<ThemeData | null>(null);

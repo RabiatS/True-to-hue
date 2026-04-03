@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ThemeData, ThemeVariation } from '../services/gemini';
+import { ThemeData, ThemeVariation } from '../services/themeService';
 import { runAccessibilityChecks, ContrastCheck } from '../utils/a11yReport';
 import { simulateColorBlindness, VisionType } from '../utils/accessibility';
 import { ChevronDown, ChevronUp } from 'lucide-react';

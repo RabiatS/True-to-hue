@@ -1,4 +1,4 @@
-import { ThemeData, ThemeVariation } from '../services/gemini';
+import { ThemeData, ThemeVariation } from '../services/themeService';
 import { getContrastRatio, simulateColorBlindness, VisionType } from './accessibility';
 
 export interface ContrastCheck {

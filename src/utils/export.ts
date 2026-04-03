@@ -1,4 +1,4 @@
-import { ThemeData, ThemeVariation } from '../services/gemini';
+import { ThemeData, ThemeVariation } from '../services/themeService';
 
 // Helper to convert hex to rgb
 function hexToRgb(hex: string) {
