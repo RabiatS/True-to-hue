@@ -9,6 +9,7 @@
     "postbuild": "node scripts/copy-gh-pages-404.mjs",
     "preview": "vite preview",
     "theme-proxy": "tsx server/theme-proxy.ts",
+    "start": "tsx server/theme-proxy.ts",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
   },
@@ -17,6 +18,7 @@
     "@vitejs/plugin-react": "^5.0.4",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
+    "tsx": "^4.21.0",
     "html2canvas": "^1.4.1",
     "jsonrepair": "^3.13.3",
     "jspdf": "^4.2.1",
@@ -32,7 +34,6 @@
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
     "tailwindcss": "^4.1.14",
-    "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

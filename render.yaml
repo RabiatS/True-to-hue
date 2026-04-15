@@ -1,0 +1,15 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# After deploy, set themeApiUrl in public/theme-api.json to your Render HTTPS URL and push
+
+services:
+  - type: web
+    name: true-to-hue-theme-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: https://rabiats.github.io,https://rabiatsadiq.com,https://www.rabiatsadiq.com
+      - key: OPENAI_API_KEY
+        sync: false

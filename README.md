@@ -14,9 +14,14 @@ AI-powered brand color system generator with export tools for CSS, tokens, and h
 
 1. Install dependencies:
    `npm.cmd install`
-2. Set the `VITE_OPENAI_API_KEY` in [.env.local](.env.local) to your OpenAI API key
-3. Run the app:
-   `npm.cmd run dev`
+2. Run `npm.cmd run dev`, click **API key**, and choose **OpenAI**, **Gemini**, or **Claude** (key stays in your browser only).  
+   Optional: [.env.local](.env.example) can supply `VITE_OPENAI_API_KEY` for dev-only direct OpenAI (never commit secrets).
+3. App URL: the dev server prints in the terminal (default port `3000`).
+
+## Theme generation on GitHub Pages
+
+Use **API key** on the site to paste your own provider key, or use **test mode** (project name starting with `!test`).  
+Optional hosted API: [DEPLOY-PROXY.md](DEPLOY-PROXY.md) and `public/theme-api.json` / `VITE_THEME_API_URL`.
 
 ## Project Structure
 

@@ -4,6 +4,8 @@ import { ThemeData, ThemeVariation, ColorChip } from '../services/themeService';
 import { isLight, copyToClipboard } from '../utils/colors';
 import { jsPDF } from 'jspdf';
 import JSZip from 'jszip';
+
+type JSPDF = InstanceType<typeof jsPDF>;
 import { generateExportFiles } from '../utils/export';
 import A11yReport from './A11yReport';
 import { Sun, Moon } from 'lucide-react';
@@ -48,6 +50,42 @@ const bodyFonts = [
   { name: 'Poppins', stack: "'Poppins', sans-serif" },
   { name: 'Libre Baskerville', stack: "'Libre Baskerville', serif" },
 ];
+
+/** Shrink font until wrapped lines fit within maxLineCount (avoids PDF cover overflow). */
+function pdfFitBoldLines(
+  pdf: JSPDF,
+  text: string,
+  maxWidth: number,
+  maxFont: number,
+  minFont: number,
+  maxLineCount: number
+): { lines: string[]; fontSize: number } {
+  const upper = text.toUpperCase();
+  let size = maxFont;
+  while (size >= minFont) {
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(size);
+    const lines = pdf.splitTextToSize(upper, maxWidth);
+    if (lines.length <= maxLineCount || size === minFont) {
+      return { lines, fontSize: size };
+    }
+    size -= 3;
+  }
+  pdf.setFontSize(minFont);
+  return { lines: pdf.splitTextToSize(upper, maxWidth), fontSize: minFont };
+}
+
+function pdfDrawBoldLines(pdf: JSPDF, lines: string[], x: number, yStart: number, fontSize: number, lineHeightFactor = 1.1): number {
+  let y = yStart;
+  const lh = fontSize * lineHeightFactor;
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(fontSize);
+  lines.forEach((line) => {
+    pdf.text(line, x, y);
+    y += lh;
+  });
+  return y;
+}
 
 const fontPresetCombos = [
   { id: 'bebas-mono', label: 'BEBAS + MONO', display: 'Bebas Neue', body: 'DM Mono' },
@@ -175,8 +213,13 @@ ${theme.palette.secondary.map(c => `  --r-secondary-${c.name.toLowerCase().repla
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(15);
         pdf.setTextColor(text.r, text.g, text.b);
-        pdf.text(title.toUpperCase(), margin, y);
-        y += 10;
+        const titleLines = pdf.splitTextToSize(title.toUpperCase(), contentWidth);
+        titleLines.forEach((ln) => {
+          ensureSpace(16);
+          pdf.text(ln, margin, y);
+          y += 14;
+        });
+        y += 4;
         pdf.setDrawColor(line.r, line.g, line.b);
         pdf.line(margin, y, pdfWidth - margin, y);
         y += 12;
@@ -208,12 +251,16 @@ ${theme.palette.secondary.map(c => `  --r-secondary-${c.name.toLowerCase().repla
       };
 
       const drawCodeBlock = (title: string, source: string, maxLines = 18) => {
-        ensureSpace(180);
         const lines = source
           .split('\n')
           .map(lineText => lineText.replace(/\t/g, '  '))
           .slice(0, maxLines);
-        const blockHeight = 28 + lines.length * 10 + 10;
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(9);
+        const codeTitleLines = pdf.splitTextToSize(title.toUpperCase(), contentWidth - 20);
+        const titleBlockH = 14 + codeTitleLines.length * 10 + 2;
+        const blockHeight = titleBlockH + 8 + lines.length * 10 + 10;
         ensureSpace(blockHeight + 10);
 
         pdf.setDrawColor(line.r, line.g, line.b);
@@ -223,15 +270,20 @@ ${theme.palette.secondary.map(c => `  --r-secondary-${c.name.toLowerCase().repla
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(9);
         pdf.setTextColor(190, 190, 190);
-        pdf.text(title.toUpperCase(), margin + 10, y + 14);
+        let cty = y + 14;
+        codeTitleLines.forEach((ln) => {
+          pdf.text(ln, margin + 10, cty);
+          cty += 10;
+        });
 
+        const sepY = y + titleBlockH;
         pdf.setDrawColor(48, 48, 48);
-        pdf.line(margin, y + 20, margin + contentWidth, y + 20);
+        pdf.line(margin, sepY, margin + contentWidth, sepY);
 
         pdf.setFont('courier', 'normal');
         pdf.setFontSize(8);
         pdf.setTextColor(232, 232, 232);
-        let codeY = y + 32;
+        let codeY = sepY + 8;
         lines.forEach((lineText, index) => {
           const clipped = lineText.length > 100 ? `${lineText.slice(0, 100)}...` : lineText;
           const numbered = `${String(index + 1).padStart(2, '0')}  ${clipped}`;
@@ -298,19 +350,27 @@ ${theme.palette.secondary.map(c => `  --r-secondary-${c.name.toLowerCase().repla
       pdf.setTextColor(92, 92, 92);
       pdf.text('TRUE TO HUE · V2.0', margin, 54);
 
-      pdf.setFontSize(74);
+      let coverY = 130;
       pdf.setTextColor(255, 255, 255);
-      pdf.text(titleWordOne.toUpperCase(), margin, 130);
+      const coverBlock1 = pdfFitBoldLines(pdf, titleWordOne, contentWidth, 74, 22, 2);
+      coverY = pdfDrawBoldLines(pdf, coverBlock1.lines, margin, coverY, coverBlock1.fontSize);
+      coverY += 16;
+
       pdf.setTextColor(primary.r, primary.g, primary.b);
-      pdf.text(titleWordTwo.toUpperCase(), margin, 198);
+      const coverBlock2 = pdfFitBoldLines(pdf, titleWordTwo, contentWidth, 74, 22, 4);
+      coverY = pdfDrawBoldLines(pdf, coverBlock2.lines, margin, coverY, coverBlock2.fontSize);
+      coverY += 16;
+
       pdf.setTextColor(255, 255, 255);
-      pdf.text('THEME', margin, 266);
+      const coverBlock3 = pdfFitBoldLines(pdf, 'THEME', contentWidth, 74, 28, 1);
+      coverY = pdfDrawBoldLines(pdf, coverBlock3.lines, margin, coverY, coverBlock3.fontSize);
 
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(11);
       pdf.setTextColor(170, 170, 170);
       const coverLines = pdf.splitTextToSize(theme.description, contentWidth - 10);
-      pdf.text(coverLines, margin, 328);
+      const descY = coverY + 36;
+      pdf.text(coverLines, margin, descY);
       pdf.text(`Generated ${dateText}`, margin, pdfHeight - 36);
 
       pdf.addPage();
@@ -330,12 +390,32 @@ ${theme.palette.secondary.map(c => `  --r-secondary-${c.name.toLowerCase().repla
       pdf.text('CTA BUTTON', margin + 12, y + 88);
       pdf.text('SECONDARY BUTTON', margin + 200, y + 88);
 
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(34);
+      const mockHeadingLeftW = 200;
+      const mockHeadingRightX = margin + 220;
+      const mockHeadingRightW = pdfWidth - margin - mockHeadingRightX;
+      let mockHeadingFont = 34;
+      let leftHeadLines: string[] = [];
+      let rightHeadLines: string[] = [];
+      while (mockHeadingFont >= 12) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(mockHeadingFont);
+        leftHeadLines = pdf.splitTextToSize(titleWordOne.toUpperCase(), mockHeadingLeftW);
+        rightHeadLines = pdf.splitTextToSize(titleWordTwo.toUpperCase(), mockHeadingRightW);
+        if (leftHeadLines.length <= 2 && rightHeadLines.length <= 2) {
+          break;
+        }
+        mockHeadingFont -= 2;
+      }
+      const mockLineH = mockHeadingFont * 1.05;
+      let mockHy = y + 58;
       pdf.setTextColor(primary.r, primary.g, primary.b);
-      pdf.text(titleWordOne.toUpperCase(), margin + 12, y + 58);
+      leftHeadLines.forEach((line, i) => {
+        pdf.text(line, margin + 12, mockHy + i * mockLineH);
+      });
       pdf.setTextColor(text.r, text.g, text.b);
-      pdf.text(titleWordTwo.toUpperCase(), margin + 220, y + 58);
+      rightHeadLines.forEach((line, i) => {
+        pdf.text(line, mockHeadingRightX, mockHy + i * mockLineH);
+      });
 
       pdf.setFillColor(primary.r, primary.g, primary.b);
       pdf.roundedRect(margin + 12, y + 98, 172, 34, 4, 4, 'F');

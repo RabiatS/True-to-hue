@@ -1,7 +1,31 @@
+import { generateThemeWithClaude } from "@/shared/claudeThemeCore.ts";
+import { generateThemeWithGemini } from "@/shared/geminiThemeCore.ts";
 import { generateThemeWithOpenAI } from "@/shared/openaiThemeCore.ts";
 import type { ColorChip, PreviewCard, ThemeData, ThemeVariation } from "@/shared/themeTypes.ts";
+import { defaultModelFor, loadUserApiSettings, type ThemeProviderId } from "@/src/services/userApiSettings.ts";
 
 export type { ColorChip, PreviewCard, ThemeData, ThemeVariation };
+
+/** `undefined` = not loaded yet; `""` loaded empty */
+let cachedThemeApiFromJson: string | null | undefined;
+
+export function isQuickTestModeInput(appName: string, appDesc: string, colorPrefs: string): boolean {
+  return shouldUseTestMode(appName, appDesc, colorPrefs);
+}
+
+/** True if proxy, dev .env, or user browser key is available. */
+export async function hasGenerationRouteConfigured(): Promise<boolean> {
+  if (await resolveThemeApiBase()) {
+    return true;
+  }
+  if (import.meta.env.DEV && import.meta.env.VITE_OPENAI_API_KEY) {
+    return true;
+  }
+  if (loadUserApiSettings()?.apiKey?.trim()) {
+    return true;
+  }
+  return false;
+}
 
 export async function generateTheme(
   appName: string,
@@ -14,7 +38,13 @@ export async function generateTheme(
     return buildTestTheme(appName, appDesc, mode);
   }
 
-  const themeApi = normalizeBaseUrl(import.meta.env.VITE_THEME_API_URL);
+  const user = loadUserApiSettings();
+  if (user?.apiKey) {
+    const model = user.model?.trim() || defaultModelFor(user.provider);
+    return generateWithUserProvider(user.provider, { ...user, model }, appName, appDesc, colorPrefs, mode, images);
+  }
+
+  const themeApi = await resolveThemeApiBase();
   if (themeApi) {
     return generateThemeViaProxy(themeApi, appName, appDesc, colorPrefs, mode, images);
   }
@@ -32,10 +62,62 @@ export async function generateTheme(
   }
 
   throw new Error(
-    "Theme generation is not configured. For local dev, add VITE_OPENAI_API_KEY to .env.local (never commit secrets). " +
-      "For the public site, deploy the server in /server (see .env.example), set OPENAI_API_KEY on the host only, " +
-      "then add the VITE_THEME_API_URL repository variable in GitHub Actions to your proxy base URL."
+    "Add your API key (OpenAI, Gemini, or Claude) using the API key button, or use test triggers such as !test on the project name"
   );
+}
+
+function generateWithUserProvider(
+  provider: ThemeProviderId,
+  user: { apiKey: string; model: string },
+  appName: string,
+  appDesc: string,
+  colorPrefs: string,
+  mode: string,
+  images: string[]
+): Promise<ThemeData> {
+  const base = {
+    apiKey: user.apiKey,
+    model: user.model,
+    appName,
+    appDesc,
+    colorPrefs,
+    mode,
+    images
+  };
+
+  if (provider === "openai") {
+    return generateThemeWithOpenAI(base);
+  }
+  if (provider === "gemini") {
+    return generateThemeWithGemini(base);
+  }
+  return generateThemeWithClaude(base);
+}
+
+async function resolveThemeApiBase(): Promise<string | undefined> {
+  const fromEnv = normalizeBaseUrl(import.meta.env.VITE_THEME_API_URL);
+  if (fromEnv) {
+    return fromEnv;
+  }
+
+  if (cachedThemeApiFromJson !== undefined) {
+    return normalizeBaseUrl(cachedThemeApiFromJson ?? undefined);
+  }
+
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}theme-api.json`, { cache: "no-store" });
+    if (!res.ok) {
+      cachedThemeApiFromJson = "";
+      return undefined;
+    }
+    const data = (await res.json()) as { themeApiUrl?: string };
+    const u = typeof data.themeApiUrl === "string" ? data.themeApiUrl.trim() : "";
+    cachedThemeApiFromJson = u;
+    return normalizeBaseUrl(u || undefined);
+  } catch {
+    cachedThemeApiFromJson = "";
+    return undefined;
+  }
 }
 
 function normalizeBaseUrl(raw: string | undefined): string | undefined {
