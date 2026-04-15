@@ -380,6 +380,9 @@ export default function LandingPage({ onGenerate, isLoading }: LandingPageProps)
                     className="w-full border p-4 text-sm focus:outline-none transition-colors min-h-[120px] resize-y"
                     style={{ backgroundColor: uiInputBg, borderColor: uiBorder, color: activeShowcase.text }}
                   />
+                  <p className="text-[10px] tracking-[1px]" style={{ color: activeShowcase.soft }}>
+                    Dev test mode: start your theme name, description, or style text with <strong>!test</strong> or <strong>7777</strong> to generate a local tester theme with zero API calls.
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <label className="block text-[10px] tracking-[2px] uppercase" style={{ color: activeShowcase.soft }}>Mode</label>

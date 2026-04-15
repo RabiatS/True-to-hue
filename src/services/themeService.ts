@@ -1,219 +1,166 @@
-function getOpenAIConfig() {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  const model = import.meta.env.VITE_OPENAI_MODEL || "gpt-4.1-mini";
-  if (!apiKey) {
-    throw new Error("Missing VITE_OPENAI_API_KEY. Add it to .env.local and restart the dev server.");
+import { generateThemeWithOpenAI } from "@/shared/openaiThemeCore.ts";
+import type { ColorChip, PreviewCard, ThemeData, ThemeVariation } from "@/shared/themeTypes.ts";
+
+export type { ColorChip, PreviewCard, ThemeData, ThemeVariation };
+
+export async function generateTheme(
+  appName: string,
+  appDesc: string,
+  colorPrefs: string,
+  mode: string,
+  images: string[]
+): Promise<ThemeData> {
+  if (shouldUseTestMode(appName, appDesc, colorPrefs)) {
+    return buildTestTheme(appName, appDesc, mode);
   }
-  return { apiKey, model };
-}
 
-export interface ThemeVariation {
-  name: string;
-  hex: string;
-  description: string;
-  darkHex: string;
-  lightHex: string;
-  bgHex: string;
-}
-
-export interface ColorChip {
-  name: string;
-  hex: string;
-  role: string;
-}
-
-export interface PreviewCard {
-  tag: string;
-  title: string;
-  body: string;
-}
-
-export interface ThemeData {
-  themeName: string;
-  description: string;
-  primaryAccentName: string;
-  primaryVariations: ThemeVariation[];
-  secondaryAccentName: string;
-  secondaryUsageRule: string;
-  secondaryVariations: ThemeVariation[];
-  previewCards: PreviewCard[];
-  palette: {
-    backgrounds: ColorChip[];
-    text: ColorChip[];
-    primary: ColorChip[];
-    secondary: ColorChip[];
-  };
-}
-
-export async function generateTheme(appName: string, appDesc: string, colorPrefs: string, mode: string, images: string[]): Promise<ThemeData> {
-  const { apiKey, model } = getOpenAIConfig();
-
-  const promptText = `Design one production-ready color system.
-Project: ${appName || 'Untitled Project'}
-Description: ${appDesc || 'A modern creative project'}
-Preferences: ${colorPrefs || 'AI suggestions'}
-Mode: ${mode}
-
-Priority: explicit user color/hex preferences > project tone > cohesion/accessibility > naming.
-Use dark-first backgrounds for DARK mode and light-first backgrounds for LIGHT mode.
-Keep practical UI contrast and readable body text.
-Primary accent should lead visually; secondary should be intentionally rarer.`;
-
-  const schemaHint = `Return JSON only with this shape:
-{
-  "themeName":"string",
-  "description":"string",
-  "primaryAccentName":"string",
-  "primaryVariations":[{"name":"string","hex":"#000000","description":"string","darkHex":"#000000","lightHex":"#000000","bgHex":"#000000"}],
-  "secondaryAccentName":"string",
-  "secondaryUsageRule":"string",
-  "secondaryVariations":[{"name":"string","hex":"#000000","description":"string","darkHex":"#000000","lightHex":"#000000","bgHex":"#000000"}],
-  "previewCards":[{"tag":"string","title":"string","body":"string"}],
-  "palette":{
-    "backgrounds":[{"name":"string","hex":"#000000","role":"string"}],
-    "text":[{"name":"string","hex":"#000000","role":"string"}],
-    "primary":[{"name":"string","hex":"#000000","role":"string"}],
-    "secondary":[{"name":"string","hex":"#000000","role":"string"}]
+  const themeApi = normalizeBaseUrl(import.meta.env.VITE_THEME_API_URL);
+  if (themeApi) {
+    return generateThemeViaProxy(themeApi, appName, appDesc, colorPrefs, mode, images);
   }
-}
-Constraints:
-- exactly 4 items in primaryVariations and secondaryVariations
-- exactly 3 previewCards
-- exactly 4 items in each palette category
-- use full #RRGGBB hex values
-- names/roles must be specific`;
 
-  const content: Array<{ type: string; text?: string; image_url?: { url: string } }> = [
-    { type: "text", text: `${promptText}\n\n${schemaHint}` }
-  ];
-
-  for (const img of images) {
-    content.push({
-      type: "image_url",
-      image_url: { url: img }
+  if (import.meta.env.DEV && import.meta.env.VITE_OPENAI_API_KEY) {
+    return generateThemeWithOpenAI({
+      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+      model: import.meta.env.VITE_OPENAI_MODEL || "gpt-4.1-mini",
+      appName,
+      appDesc,
+      colorPrefs,
+      mode,
+      images
     });
   }
 
-  const basePayload = {
-    model,
-    temperature: 0.4,
-    max_tokens: 1400,
-    messages: [
-      {
-        role: "system" as const,
-        content: "You are an expert color design-system assistant. Always return valid JSON only."
-      },
-      {
-        role: "user" as const,
-        content
-      }
-    ]
-  };
+  throw new Error(
+    "Theme generation is not configured. For local dev, add VITE_OPENAI_API_KEY to .env.local (never commit secrets). " +
+      "For the public site, deploy the server in /server (see .env.example), set OPENAI_API_KEY on the host only, " +
+      "then add the VITE_THEME_API_URL repository variable in GitHub Actions to your proxy base URL."
+  );
+}
 
-  let response = await fetch("https://api.openai.com/v1/chat/completions", {
+function normalizeBaseUrl(raw: string | undefined): string | undefined {
+  const t = raw?.trim();
+  if (!t) {
+    return undefined;
+  }
+  return t.replace(/\/$/, "");
+}
+
+async function generateThemeViaProxy(
+  baseUrl: string,
+  appName: string,
+  appDesc: string,
+  colorPrefs: string,
+  mode: string,
+  images: string[]
+): Promise<ThemeData> {
+  const res = await fetch(`${baseUrl}/generate-theme`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      ...basePayload,
-      response_format: { type: "json_object" }
-    })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ appName, appDesc, colorPrefs, mode, images })
   });
 
-  if (!response.ok) {
-    const firstErrorText = await response.text();
-    const maybeUnsupportedJsonFormat =
-      response.status === 400 &&
-      /response_format|json_object|unsupported/i.test(firstErrorText);
-
-    // Some models reject json_object response_format; retry once without it.
-    if (maybeUnsupportedJsonFormat) {
-      response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`
-        },
-        body: JSON.stringify(basePayload)
-      });
-    } else {
-      throw new Error(buildRequestError(response.status, firstErrorText));
+  const raw = await res.text();
+  if (!res.ok) {
+    let msg = `Theme API failed (${res.status}).`;
+    try {
+      const j = JSON.parse(raw) as { error?: string };
+      if (j.error) {
+        msg = j.error;
+      }
+    } catch {
+      if (raw) {
+        msg = `${msg} ${raw.slice(0, 200)}`;
+      }
     }
+    throw new Error(msg);
   }
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(buildRequestError(response.status, errorText));
-  }
-
-  const data = await response.json();
-  const text = data?.choices?.[0]?.message?.content;
-  if (!text || typeof text !== "string") {
-    throw new Error("OpenAI returned an empty response.");
-  }
-
-  return parseThemeData(text);
+  return JSON.parse(raw) as ThemeData;
 }
 
-function parseThemeData(raw: string): ThemeData {
-  const start = raw.indexOf("{");
-  const end = raw.lastIndexOf("}");
-  if (start < 0 || end < 0 || end <= start) {
-    throw new Error("Could not parse JSON from model output.");
-  }
-  const parsed = JSON.parse(raw.slice(start, end + 1));
-  validateThemeData(parsed);
-  return parsed as ThemeData;
+function shouldUseTestMode(appName: string, appDesc: string, colorPrefs: string) {
+  const triggers = ["!test", "#test", "!dev", "#dev", "7777", "0000", "tth-test"];
+  return [appName, appDesc, colorPrefs].some((value) => startsWithAnyTrigger(value, triggers));
 }
 
-function validateThemeData(parsed: unknown) {
-  if (!parsed || typeof parsed !== "object") {
-    throw new Error("Model response was not valid JSON object data.");
-  }
-
-  const p = parsed as Partial<ThemeData>;
-  if (!p.themeName || !p.description || !p.palette) {
-    throw new Error("Theme response is missing required fields.");
-  }
-
-  const pri = p.primaryVariations;
-  const sec = p.secondaryVariations;
-  const cards = p.previewCards;
-  const pal = p.palette;
-
-  if (!Array.isArray(pri) || pri.length !== 4) {
-    throw new Error("Theme response had invalid primary variations.");
-  }
-  if (!Array.isArray(sec) || sec.length !== 4) {
-    throw new Error("Theme response had invalid secondary variations.");
-  }
-  if (!Array.isArray(cards) || cards.length !== 3) {
-    throw new Error("Theme response had invalid preview cards.");
-  }
-  if (
-    !pal ||
-    !Array.isArray(pal.backgrounds) || pal.backgrounds.length !== 4 ||
-    !Array.isArray(pal.text) || pal.text.length !== 4 ||
-    !Array.isArray(pal.primary) || pal.primary.length !== 4 ||
-    !Array.isArray(pal.secondary) || pal.secondary.length !== 4
-  ) {
-    throw new Error("Theme response had invalid palette groups.");
-  }
+function startsWithAnyTrigger(value: string, triggers: string[]) {
+  const normalized = (value || "").trim().toLowerCase();
+  return triggers.some((trigger) => normalized.startsWith(trigger));
 }
 
-function buildRequestError(status: number, rawError: string) {
-  if (status === 401) {
-    return "OpenAI API key is invalid or missing. Set VITE_OPENAI_API_KEY in .env.local and restart the app.";
-  }
-  if (status === 429) {
-    return "OpenAI rate limit reached. Wait a moment and try again.";
-  }
-  if (status >= 500) {
-    return "OpenAI service is temporarily unavailable. Please try again shortly.";
-  }
+function buildTestTheme(appName: string, appDesc: string, mode: string): ThemeData {
+  const isLight = String(mode).toUpperCase() === "LIGHT";
+  const name = appName?.trim() ? `${appName.trim()} Tester` : "True to Hue Tester";
 
-  const compact = rawError.replace(/\s+/g, " ").slice(0, 280);
-  return `Theme generation request failed (${status}). ${compact}`;
+  const backgrounds = isLight
+    ? [
+        { name: "Paper", hex: "#F6F4EF", role: "Main page background" },
+        { name: "Shell", hex: "#ECE8DF", role: "Secondary background" },
+        { name: "Card", hex: "#FFFFFF", role: "Card surface" },
+        { name: "Depth", hex: "#D9D2C3", role: "Dividers and low emphasis" },
+      ]
+    : [
+        { name: "Void", hex: "#0A0A0A", role: "Main page background" },
+        { name: "Obsidian", hex: "#141414", role: "Secondary background" },
+        { name: "Card", hex: "#1E1E1E", role: "Card surface" },
+        { name: "Depth", hex: "#2A2A2A", role: "Dividers and low emphasis" },
+      ];
+
+  const text = isLight
+    ? [
+        { name: "Ink", hex: "#171717", role: "Primary text" },
+        { name: "Graphite", hex: "#383838", role: "Secondary text" },
+        { name: "Smoke", hex: "#636363", role: "Muted text" },
+        { name: "Inverse", hex: "#FFFFFF", role: "Text on dark accents" },
+      ]
+    : [
+        { name: "Bone", hex: "#F5F5F0", role: "Primary text" },
+        { name: "Pearl", hex: "#E8E8E3", role: "Secondary text" },
+        { name: "Ash", hex: "#A0A09A", role: "Muted text" },
+        { name: "Slate", hex: "#7A7A75", role: "Subdued text" },
+      ];
+
+  return {
+    themeName: name,
+    description: `Admin dev mode test palette generated locally with no API usage.${appDesc ? ` Input summary: ${appDesc.slice(0, 120)}` : ""}`,
+    isTestMode: true,
+    testModeLabel: "Admin Dev Mode · Local Tester (No API)",
+    primaryAccentName: "Primary",
+    primaryVariations: [
+      { name: "Signal Ember", hex: "#A81C1C", description: "Strong action red", darkHex: "#6B0000", lightHex: "#E66565", bgHex: "#2A0C0C" },
+      { name: "Warm Gold", hex: "#D59600", description: "Energetic highlight", darkHex: "#8A6200", lightHex: "#F0C75A", bgHex: "#2B1F05" },
+      { name: "Royal Violet", hex: "#8B6AD9", description: "Creative authority", darkHex: "#5E45A8", lightHex: "#B49CEE", bgHex: "#211734" },
+      { name: "Ocean Mint", hex: "#3EB489", description: "Balanced freshness", darkHex: "#2A8A61", lightHex: "#84D6B7", bgHex: "#0B241B" },
+    ],
+    secondaryAccentName: "Secondary",
+    secondaryUsageRule: "Use the secondary accent sparingly for highlights, tags, and low-frequency interactions to preserve hierarchy.",
+    secondaryVariations: [
+      { name: "Soft Lilac", hex: "#B39DDB", description: "Gentle supportive tone", darkHex: "#7F6AA9", lightHex: "#D7CBEE", bgHex: "#1F1A2B" },
+      { name: "Pastel Coral", hex: "#F4978E", description: "Warm and friendly cue", darkHex: "#C46D66", lightHex: "#F8C4BE", bgHex: "#2C1917" },
+      { name: "Teal Mist", hex: "#73C6B6", description: "Calm data hint", darkHex: "#4D9186", lightHex: "#A3DDD2", bgHex: "#142523" },
+      { name: "Sky Bloom", hex: "#8CB9FF", description: "Cool auxiliary accent", darkHex: "#5E85C2", lightHex: "#B8D3FF", bgHex: "#151F33" },
+    ],
+    previewCards: [
+      { tag: "Test", title: "Local Mode Active", body: "This preview confirms your layout and exports without spending API credits." },
+      { tag: "Workflow", title: "Fast Iteration", body: "Use this mode for UX, PDF, and export testing before real generation." },
+      { tag: "Ready", title: "Switch To Live", body: "Remove trigger text to return to OpenAI-generated brand systems." },
+    ],
+    palette: {
+      backgrounds,
+      text,
+      primary: [
+        { name: "Crimson", hex: "#A81C1C", role: "Main brand color" },
+        { name: "Sunset", hex: "#D59600", role: "Warm supporting brand" },
+        { name: "Plum", hex: "#8B6AD9", role: "Creative support color" },
+        { name: "Jade", hex: "#3EB489", role: "Fresh tertiary support" },
+      ],
+      secondary: [
+        { name: "Lilac", hex: "#B39DDB", role: "Auxiliary accent" },
+        { name: "Coral", hex: "#F4978E", role: "Soft signal accent" },
+        { name: "Teal", hex: "#73C6B6", role: "Data/support accent" },
+        { name: "Sky", hex: "#8CB9FF", role: "Info accent" },
+      ],
+    },
+  };
 }

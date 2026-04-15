@@ -645,6 +645,11 @@ ${theme.palette.secondary.map(c => `  --r-secondary-${c.name.toLowerCase().repla
           <div className={`text-[10px] tracking-[4px] ${t.textInverse} uppercase mb-2`}>
             True to Hue · v2.0
           </div>
+          {theme.isTestMode && (
+            <div className={`text-[10px] tracking-[2px] uppercase mb-3`} style={{ color: selectedPrimary.hex }}>
+              {theme.testModeLabel || 'Admin Dev Mode · Local Tester (No API)'}
+            </div>
+          )}
           <div className="font-bebas text-[clamp(48px,8vw,96px)] leading-[0.9] tracking-[2px]">
             {theme.themeName.split(' ')[0]}
             <span style={{ color: selectedPrimary.hex }} className="transition-colors duration-300">

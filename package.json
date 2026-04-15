@@ -1,12 +1,14 @@
 {
-  "name": "react-example",
+  "name": "true-to-hue",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
+    "postbuild": "node scripts/copy-gh-pages-404.mjs",
     "preview": "vite preview",
+    "theme-proxy": "tsx server/theme-proxy.ts",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
   },
@@ -16,6 +18,7 @@
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "html2canvas": "^1.4.1",
+    "jsonrepair": "^3.13.3",
     "jspdf": "^4.2.1",
     "jszip": "^3.10.1",
     "lucide-react": "^0.546.0",
