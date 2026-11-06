@@ -1,4 +1,5 @@
 import { parseThemeJsonFromText } from "./themeJsonParse.ts";
+import { providerFetch } from "./providerHttp.ts";
 import { buildThemePromptBundle, THEME_SYSTEM_INSTRUCTION } from "./themePromptBlocks.ts";
 import type { ThemeData } from "./themeTypes.ts";
 
@@ -43,15 +44,19 @@ export async function generateThemeWithGemini(params: GeminiThemeParams): Promis
     }
   };
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
+  const response = await providerFetch(
+    url,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    },
+    "Google Gemini"
+  );
 
   if (!response.ok) {
     const err = await response.text();
-    throw new Error(buildGeminiError(response.status, err));
+    throw new Error(buildGeminiError(response.status, err, model));
   }
 
   const data = (await response.json()) as {
@@ -71,13 +76,43 @@ export async function generateThemeWithGemini(params: GeminiThemeParams): Promis
   return parseThemeJsonFromText(text);
 }
 
-function buildGeminiError(status: number, raw: string) {
-  if (status === 400 || status === 403) {
-    return "Gemini API key may be invalid or the model name is wrong. Check AI Studio key and model id.";
+function buildGeminiError(status: number, raw: string, model: string) {
+  const detail = extractGeminiMessage(raw);
+
+  // 400 and 403 mean different things and must not be collapsed together:
+  // reporting a wrong model id as a bad key sends people to regenerate a
+  // key that was fine all along.
+  if (status === 400) {
+    if (/api[_ ]?key|api key not valid/i.test(raw)) {
+      return `Gemini rejected the API key. Check the key from Google AI Studio.${detail ? ` (${detail})` : ""}`;
+    }
+    return `Gemini rejected the request${detail ? `: ${detail}` : "."} Model in use: "${model}".`;
+  }
+  if (status === 403) {
+    return `Gemini denied access to this key${detail ? `: ${detail}` : "."} The key may lack permission or the API may not be enabled for its project.`;
+  }
+  if (status === 404) {
+    return `Gemini has no model named "${model}". Change the model id in the API key dialog.`;
   }
   if (status === 429) {
     return "Gemini rate limit reached. Try again shortly.";
   }
-  const compact = raw.replace(/\s+/g, " ").slice(0, 280);
-  return `Gemini request failed (${status}). ${compact}`;
+  if (status >= 500) {
+    return "Gemini is temporarily unavailable. Please try again shortly.";
+  }
+  return `Gemini request failed (${status}).${detail ? ` ${detail}` : ` ${raw.replace(/\s+/g, " ").slice(0, 280)}`}`;
+}
+
+/** Pull the human-readable message out of Google's error envelope. */
+function extractGeminiMessage(raw: string): string {
+  try {
+    const j = JSON.parse(raw) as { error?: { message?: string } };
+    const m = j?.error?.message;
+    if (typeof m === "string" && m.trim()) {
+      return m.replace(/\s+/g, " ").slice(0, 280);
+    }
+  } catch {
+    // fall through to the raw text
+  }
+  return "";
 }
