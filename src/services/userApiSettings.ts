@@ -1,3 +1,5 @@
+import { readItem, removeItem, writeItem } from "./safeStorage.ts";
+
 export type ThemeProviderId = "openai" | "gemini" | "anthropic";
 
 export interface UserApiSettings {
@@ -22,7 +24,7 @@ export function defaultModelFor(provider: ThemeProviderId): string {
 
 export function loadUserApiSettings(): UserApiSettings | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = readItem(STORAGE_KEY);
     if (!raw) {
       return null;
     }
@@ -40,8 +42,9 @@ export function loadUserApiSettings(): UserApiSettings | null {
   }
 }
 
+/** Throws a `StorageError` when the browser refuses to persist the key. */
 export function saveUserApiSettings(s: UserApiSettings): void {
-  localStorage.setItem(
+  writeItem(
     STORAGE_KEY,
     JSON.stringify({
       provider: s.provider,
@@ -52,7 +55,7 @@ export function saveUserApiSettings(s: UserApiSettings): void {
 }
 
 export function clearUserApiSettings(): void {
-  localStorage.removeItem(STORAGE_KEY);
+  removeItem(STORAGE_KEY);
 }
 
 export function hasUserApiKey(): boolean {
