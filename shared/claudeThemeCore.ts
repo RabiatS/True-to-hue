@@ -1,4 +1,5 @@
 import { parseThemeJsonFromText } from "./themeJsonParse.ts";
+import { providerFetch } from "./providerHttp.ts";
 import { buildThemePromptBundle, THEME_SYSTEM_INSTRUCTION } from "./themePromptBlocks.ts";
 import type { ThemeData } from "./themeTypes.ts";
 
@@ -41,21 +42,29 @@ export async function generateThemeWithClaude(params: ClaudeThemeParams): Promis
     content.push(dataUrlToClaudeBlock(img));
   }
 
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01"
+  const response = await providerFetch(
+    "https://api.anthropic.com/v1/messages",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        // Required for browser-origin calls; without it Anthropic's preflight
+        // returns 400 with no access-control-allow-origin and the browser
+        // blocks the request before any response reaches us.
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 8192,
+        temperature: 0.4,
+        system: THEME_SYSTEM_INSTRUCTION,
+        messages: [{ role: "user", content }]
+      })
     },
-    body: JSON.stringify({
-      model,
-      max_tokens: 8192,
-      temperature: 0.4,
-      system: THEME_SYSTEM_INSTRUCTION,
-      messages: [{ role: "user", content }]
-    })
-  });
+    "Claude (Anthropic)"
+  );
 
   if (!response.ok) {
     const err = await response.text();
